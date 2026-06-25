@@ -15,5 +15,5 @@ dependencies = [
     "numpy",
     "pandas",
     "pydexcom",
-    "timesfm"
+    "timesfm[torch]>=2.0.0"
 ]
