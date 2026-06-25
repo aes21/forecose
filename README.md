@@ -1,3 +1,6 @@
+[![PyPI](https://img.shields.io/pypi/v/pydexcom?style=flat-square)](https://pypi.org/project/forecose/)
+[![Python versions](https://img.shields.io/pypi/pyversions/forecose.svg?style=flat-square)](https://pypi.org/project/forecose/)
+
 A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/pydexcom) using Google's [TimesFM](https://github.com/google-research/timesfm). Used to predict immediate, short term blood glucose readings.
 
 > All modelling and forecasting is performed locally on your device. The only external connections made are with:
@@ -34,3 +37,8 @@ A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/
 3 2026-06-25 11:16:19.199000+01:00           7.767045  7.738261  6.965607  7.621467  8.026337  8.236394
 4 2026-06-25 11:21:19.199000+01:00           7.615633  7.667328  6.668064  7.442780  7.972524  8.216294
 ```
+
+## What do these predictions mean?
+`forecose` applies the TimesFM PyTorch model to blood glucose values retrieved from the `pydexcom` Python API interface for Dexcom. The `predicted_glucose` details a point prediction from the resulting probabilistic distribution over the next hour (12x 5 minute interval readings).
+
+The probability quantiles (from `q10` to `q90`) highlights the prediction confidence band and boundaries for the immediate upcoming glucose readings.
