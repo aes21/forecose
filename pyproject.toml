@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "forecose"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
     {name = "Alexander Sadler"}
 ]
 description = "A time-series forecasting extension for pydexcom using Google's TimesFM"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "pandas",
