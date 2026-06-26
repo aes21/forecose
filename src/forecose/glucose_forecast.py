@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pandas as pd
 
 from .const import FORECAST_DESCRIPTIONS, MMOL_L_CONVERSION_FACTOR
