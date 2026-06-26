@@ -8,16 +8,17 @@ import timesfm
 
 from pydexcom import Dexcom
 
+from .const import CLIP_HIGH, CLIP_LOW, FORECAST_QUANTILES, HORIZON, MAX_MAX_COUNT, MAX_MINUTES
+
+from .glucose_forecast import GlucoseForecast
+
 class DexcomForecast:
     """Class for a time-series forecasting model construction of CGM data."""
 
     def __init__(
             self,
-            cgm_history: np.ndarray,
-            last_timestamp: pd.Timestamp,
-            sampling_interval: pd.Timedelta,
-            context_len: int = 288,
-            horizon: int = 12
+            context_len: int = MAX_MAX_COUNT,
+            horizon: int = HORIZON
     ) -> None:
         """
         Compiles the TimesFM model.
@@ -25,9 +26,9 @@ class DexcomForecast:
         self.context_len = context_len
         self.horizon = horizon
 
-        self.cgm_history = cgm_history[-self.context_len:]
-        self.last_timestamp = last_timestamp
-        self.sampling_interval = sampling_interval
+        self._cgm_history = None
+        self._last_timestamp = None
+        self._sampling_interval = None
 
         # initalise and compile the TimesFM model
         self.model = timesfm.TimesFM_2p5_200M_torch.from_pretrained(
@@ -44,73 +45,55 @@ class DexcomForecast:
             )
         )
 
-    @classmethod
-    def from_dexcom(
-        cls,
-        dexcom: Dexcom,
-        context_len: int = 288,
-        horizon: int = 12
-    ):
-        """Pull data from an active pydexcom session."""
+    def _fetch_readings(self, dexcom: Dexcom) -> None:
+        """Fetch the most recent readings from the active pydexcom session."""
         if not isinstance(dexcom, Dexcom):
             raise TypeError("Expected an object of type pydexcom.Dexcom.")
         
         # extract data
         readings = dexcom.get_glucose_readings(
-            minutes=1440, max_count=context_len
+            minutes=MAX_MINUTES, max_count=self.context_len
         )
         if not readings:
             raise RuntimeError("No readings returned from Dexcom Share API.")
         
         # process data structures
         df = pd.DataFrame(
-            [{"Time": r.datetime, "Glucose": r.mmol_l} for r in reversed(readings)]
+            [{"Time": r.datetime, "Glucose": r.value} for r in reversed(readings)]
         )
         df["Time"] = pd.to_datetime(df["Time"], utc=True).dt.tz_convert("Europe/London")
         df = df.sort_values("Time").reset_index(drop=True)
 
-        cgm_history = df["Glucose"].to_numpy(dtype=float)
-        last_timestamp = df["Time"].iloc[-1]
-        sampling_interval = pd.Timedelta(df["Time"].diff().median())
+        self._cgm_history = df["Glucose"].to_numpy(dtype=float)[-self.context_len:]
+        self._last_timestamp = df["Time"].iloc[-1]
+        self._sampling_interval = pd.Timedelta(df["Time"].diff().median())
 
-        # return instance
-        return cls(
-            cgm_history=cgm_history,
-            last_timestamp=last_timestamp,
-            sampling_interval=sampling_interval,
-            context_len=context_len,
-            horizon=horizon
-        )
-    
-    def forecast(self) -> pd.DataFrame:
+    def get_forecast(self, dexcom: Dexcom) -> GlucoseForecast:
         """Returns point and quantile forecasts of time series data."""
-        if len(self.cgm_history) == 0:
-            raise ValueError("No historical data provided for forecasting.")
-        
+        self._fetch_readings(dexcom)
+
+        if self._cgm_history is None or self._last_timestamp is None:
+            raise RuntimeError("CGM history unavailable; call _fetch_readings first.")
+
         # run inference
         point_forecast, quantile_forecast = self.model.forecast(
             horizon=self.horizon,
-            inputs=[self.cgm_history],
+            inputs=[self._cgm_history],
         )
 
         point_vals = point_forecast[0]
         quant_vals = quantile_forecast[0]
 
         future_timestamps = pd.date_range(
-            start=self.last_timestamp + self.sampling_interval,
+            start=self._last_timestamp + self._sampling_interval,
             periods=self.horizon,
-            freq=self.sampling_interval,
+            freq=self._sampling_interval,
         )
 
-        # compile
-        forecast_df = pd.DataFrame({
-            "timestamp": future_timestamps,
-            "predicted_glucose": np.clip(point_vals, *(2.2, 22.2)),
-            "q10": np.clip(quant_vals[:, 0], *(2.2, 22.2)),
-            "q25": np.clip(quant_vals[:, 1], *(2.2, 22.2)),
-            "q50": np.clip(quant_vals[:, 4], *(2.2, 22.2)),
-            "q75": np.clip(quant_vals[:, 7], *(2.2, 22.2)),
-            "q90": np.clip(quant_vals[:, 8], *(2.2, 22.2)),
-        })
+        glucose_forecast = {"timestamp": future_timestamps,
+                            "predicted_glucose": np.clip(point_vals, CLIP_LOW, CLIP_HIGH)}
+        
+        for col, idx in FORECAST_QUANTILES.items():
+            glucose_forecast[col] = np.clip(quant_vals[:, idx], CLIP_LOW, CLIP_HIGH)
 
-        return forecast_df
+        return GlucoseForecast(glucose_forecast)
