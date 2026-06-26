@@ -4,14 +4,14 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pytest.svg?style=flat-square)](https://pypi.org/project/forecose/)
 [![Tests](https://img.shields.io/github/actions/workflow/status/aes21/forecose/test.yaml?style=flat-square&label=tests)](https://github.com/aes21/forecose/actions/workflows/test.yaml)
 
-A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/pydexcom) using Google's [TimesFM](https://github.com/google-research/timesfm). Used to predict immediate, short term blood glucose readings.
+A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/pydexcom) using Google's [TimesFM](https://github.com/google-research/timesfm). Readings from the previous 24 hours are captured from the Dexcom Share API service are fed into the model to forecast blood glucose values over the next hour.
 
 > All modelling and forecasting is performed locally on your device. The only external connections made are with:
 > - Dexcom Share API: fetching CGM readings following the `pydexcom` approach.
 > - HuggingFace: one-time download of the forecasting model weights on the first run.
 
 ## Quick Start
-1. Ensure that you have installed the pydexcom package and [enabled the Share service](https://provider.dexcom.com/education-research/cgm-education-use/videos/setting-dexcom-share-and-follow) within your [Dexcom G7 / G6 / G5 / G4](https://www.dexcom.com/apps).
+1. Ensure that you have installed the `pydexcom` package and [enabled the Share service](https://provider.dexcom.com/education-research/cgm-education-use/videos/setting-dexcom-share-and-follow) within your [Dexcom G7 / G6 / G5 / G4](https://www.dexcom.com/apps).
 
 `pip install pydexcom`
 
@@ -59,6 +59,5 @@ A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/
 ```
 
 ## What do these predictions mean?
-`forecose` applies the TimesFM PyTorch model to blood glucose values retrieved from the `pydexcom` Python API interface for Dexcom. The `predicted_glucose` details a point prediction from the resulting probabilistic distribution over the next hour (12x 5 minute interval readings).
-
-The probability quantiles (from `q10` to `q90`) highlights the prediction confidence band and boundaries for the immediate upcoming glucose readings.
+- `predicted-glucose`: The most likely trajectory your blood sugar will take (centred baseline of the confidence bands).
+- `q10` to `q90`: The range of confidence bands provide a realistic upper and lower estimate boundaries, showing the full probability distribution of predicted glucose values.
