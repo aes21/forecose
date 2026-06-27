@@ -91,9 +91,9 @@ class DexcomForecast:
         )
 
         glucose_forecast = {"timestamp": future_timestamps,
-                            "predicted_glucose": np.clip(point_vals, CLIP_LOW, CLIP_HIGH)}
+                            "predicted_glucose": np.round(np.clip(point_vals, CLIP_LOW, CLIP_HIGH), 0)}
         
         for col, idx in FORECAST_QUANTILES.items():
-            glucose_forecast[col] = np.clip(quant_vals[:, idx], CLIP_LOW, CLIP_HIGH)
+            glucose_forecast[col] = np.round(np.clip(quant_vals[:, idx], CLIP_LOW, CLIP_HIGH), 0)
 
         return GlucoseForecast(glucose_forecast)

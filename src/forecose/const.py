@@ -1,9 +1,9 @@
 from pydexcom.const import MAX_MAX_COUNT, MAX_MINUTES, MMOL_L_CONVERSION_FACTOR
 
-CLIP_LOW = 39.6
+CLIP_LOW = 40
 """Lowest glucose value reading in mg/dL."""
 
-CLIP_HIGH = 399.6
+CLIP_HIGH = 400
 """Highest glucose value reading in mg/dL."""
 
 FORECAST_QUANTILES: dict[str, int] = {
