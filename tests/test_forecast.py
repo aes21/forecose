@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 from pydexcom import Dexcom
 from forecose import DexcomForecast
 from forecose.glucose_forecast import GlucoseForecast
-from forecose.const import CLIP_HIGH, CLIP_LOW
+from forecose.const import CLIP_HIGH, CLIP_LOW, MMOL_L_CONVERSION_FACTOR
 
 @pytest.fixture
 def mock_timesfm_model():
@@ -81,6 +81,24 @@ def test_mmol_l_conversion(mock_dexcom, mock_timesfm_model):
 
     assert isinstance(df_mmol, GlucoseForecast)
 
-    assert df_mmol["predicted_glucose"].iloc[0] < 22.0
+    assert df_mmol["predicted_glucose"].iloc[0] < (CLIP_HIGH * MMOL_L_CONVERSION_FACTOR)
 
     assert not df["predicted_glucose"].equals(df_mmol["predicted_glucose"])
+
+def test_kinetics(mock_dexcom, mock_timesfm_model):
+    """Verifies deterministic events shift the forecast in the correct direction and within physical boundaries."""
+    forecaster = DexcomForecast()
+
+    df = forecaster.get_forecast(mock_dexcom)
+
+    carbs_df = df.add_event(type="carbs", units=50)
+    assert carbs_df["predicted_glucose"].iloc[-1] > df["predicted_glucose"].iloc[-1]
+
+    insulin_df = df.add_event(type="insulin", units=10)
+    assert insulin_df["predicted_glucose"].iloc[-1] < df["predicted_glucose"].iloc[-1]
+
+    # verify clipping
+    error_df = df.add_event(type="insulin", units=200)
+    assert error_df["predicted_glucose"].min() >= CLIP_LOW
+
+    assert df["predicted_glucose"].equals(forecaster.get_forecast(mock_dexcom)["predicted_glucose"])
