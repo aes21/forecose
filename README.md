@@ -58,7 +58,7 @@ A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/
 11 2026-06-26 12:36:22.163000+01:00                5.7  6.2  3.2  5.0  7.1  8.1
 ```
 
-## What do these predictions mean?
+### What do these predictions mean?
 - `predicted-glucose`: The most likely trajectory your blood sugar will take (centred baseline of the confidence bands).
 - `q10` to `q90`: The range of confidence bands provide a realistic upper and lower estimate boundaries, showing the full probability distribution of predicted glucose values.
 
