@@ -14,7 +14,7 @@ class _config:
             f"Insulin peak effect time: {self.insulin_tau} mins\n"
             f"Insulin sensitivity: {self.insulin_isf} mg/dL per unit\n"
             f"Carb peak effect time: {self.carb_tau} mins\n"
-            f"Carb sensitivity: {self.carb_csf} per gram\n"
+            f"Carb sensitivity: {self.carb_csf} mg/dL per gram\n"
         )
     
 options = _config()
