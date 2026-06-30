@@ -26,7 +26,7 @@ class GlucoseForecast(pd.DataFrame):
 
         return forecast
     
-    def add_event(self, type: _TYPES, units: float, minutes_ago: int = 0):
+    def add_event(self, type: _TYPES, units: float, minutes_ago: int = 0, tau: float | None = None, sensitivity: float | None = None):
         """Applies an overly to account for insulin (downward) or carb (upward) events."""
         forecast = self.copy()
 
@@ -34,7 +34,7 @@ class GlucoseForecast(pd.DataFrame):
         t_future = np.arange(5, 65, 5) + minutes_ago
 
         # calculate impact array
-        impact_curve = calculate_event_curve(t_array=t_future, type=type, units=units)
+        impact_curve = calculate_event_curve(t_array=t_future, type=type, units=units, tau=tau, sensitivity=sensitivity)
 
         for col in FORECAST_DESCRIPTIONS:
             if col in forecast.columns:

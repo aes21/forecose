@@ -1,3 +1,5 @@
+from .const import options
+
 from typing import Literal, Optional
 
 import numpy as np
@@ -19,15 +21,15 @@ def calculate_event_curve(t_array: np.ndarray, type: _TYPES, units: float, tau: 
 
     if type == "insulin":
         # default 55 minute peak
-        t_peak = tau if tau is not None else 55.0
+        t_peak = tau if tau is not None else options.insulin_tau
 
         # sets a 40 mg/dL drop per unit
-        factor = sensitivity if sensitivity is not None else 40.0
+        factor = sensitivity if sensitivity is not None else options.insulin_isf
     else:
         # default 40 minute peak
-        t_peak = tau if tau is not None else 40.0
+        t_peak = tau if tau is not None else options.carb_tau
 
         # sets a 4 mg/dL rise per carb unit (g)
-        factor = sensitivity if sensitivity is not None else 4.0
+        factor = sensitivity if sensitivity is not None else options.carb_csf
 
     return _erlang_cdf(t_array, magnitude=units, sensitivity=factor, tau=t_peak)
