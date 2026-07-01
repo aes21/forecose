@@ -1,3 +1,5 @@
+"""Constants used in `forecose`."""
+
 from pydexcom.const import MAX_MAX_COUNT, MAX_MINUTES, MMOL_L_CONVERSION_FACTOR
 
 class _config:

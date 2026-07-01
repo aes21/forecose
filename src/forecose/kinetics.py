@@ -1,3 +1,5 @@
+"""Kinetic event impact curve calculations."""
+
 from .const import options
 
 from typing import Literal, Optional

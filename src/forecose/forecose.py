@@ -1,4 +1,4 @@
-"""Dexcom prediction class."""
+"""Dexcom forecast prediction class."""
 
 import numpy as np
 
