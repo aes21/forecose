@@ -22,11 +22,11 @@ A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/
 >>> dexcom = Dexcom(username="username", password="password")
 ```
 
-3. Generate a prediction.
+3. Generate a prediction. By default, the `DexcomForecast` class predicts the upcoming hour (the next 12 readings) to prevent overextending the forecast. Set custom prediction lengths by adjusting the `horizon` argument.
 
 ```python
 >>> from forecose import DexcomForecast
->>> predictions = DexcomForecast().get_forecast(dexcom)
+>>> predictions = DexcomForecast(horizon=12).get_forecast(dexcom)
 >>> print(predictions)
                           timestamp  predicted_glucose    q10    q25    q50    q75    q90
 0  2026-06-30 11:56:43.332500+01:00              156.0  156.0  147.0  155.0  159.0  162.0
