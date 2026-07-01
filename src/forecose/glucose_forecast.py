@@ -31,7 +31,8 @@ class GlucoseForecast(pd.DataFrame):
         forecast = self.copy()
 
         # generate time vector with offset
-        t_future = np.arange(5, 65, 5) + minutes_ago
+        intervals = len(forecast)
+        t_future = np.arange(5, (intervals * 5) + 5, 5) + minutes_ago
 
         # calculate impact array
         impact_curve = calculate_event_curve(t_array=t_future, type=type, units=units, tau=tau, sensitivity=sensitivity)
