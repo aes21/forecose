@@ -103,7 +103,7 @@ By default, `forecose` updates the forecast predictions using the standard clini
 11 2026-06-30 12:51:43.327000+01:00                5.6  5.6  2.4  4.9  7.0  7.8
 ```
 
-By default, sensitivity to insulin (ISF) and carbohydrates (CSF) is set at 40 mg/dL per 1U and 4 mg/dL per gram, respectively. These values are placeholders meant to represent reasonable values and should be adjusted through the `add_event` method using the `sensitivity` parameter. In future, I hope to develop a method for calculating estimate values from historic data.
+By default, sensitivity to insulin (ISF) and carbohydrates (CSF) is set at 40 mg/dL per 1U and 4 mg/dL per gram, respectively. These values are placeholders meant to represent reasonable values and should be adjusted through the `add_event` method using the `tau` and `sensitivity` parameters. In future, I hope to develop a method for calculating estimate values from historic data.
 
 ```python
 >>> insensitive_insulin_predictions = predictions.add_event(type="insulin", units=5, minutes_ago=0, sensitivity=20.0)
