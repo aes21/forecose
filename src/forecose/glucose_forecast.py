@@ -36,8 +36,12 @@ class GlucoseForecast(pd.DataFrame):
         intervals = len(forecast)
         t_future = np.arange(5, (intervals * 5) + 5, 5) + minutes_ago
 
+        # factor prior impact
+        t_all = np.concatenate(([minutes_ago], t_future))
+        impact_all = calculate_event_curve(t_array=t_all, type=type, units=units, tau=tau, sensitivity=sensitivity)
+
         # calculate impact array
-        impact_curve = calculate_event_curve(t_array=t_future, type=type, units=units, tau=tau, sensitivity=sensitivity)
+        impact_curve = impact_all[1:] - impact_all[0]
 
         for col in FORECAST_DESCRIPTIONS:
             if col in forecast.columns:
