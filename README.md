@@ -4,14 +4,14 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pytest.svg?style=flat-square)](https://pypi.org/project/forecose/)
 [![Tests](https://img.shields.io/github/actions/workflow/status/aes21/forecose/test.yaml?style=flat-square&label=tests)](https://github.com/aes21/forecose/actions/workflows/test.yaml)
 
-A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/pydexcom) using Google's [TimesFM](https://github.com/google-research/timesfm). Readings from the previous 24 hours are captured from the Dexcom Share API service are fed into the model to forecast blood glucose values over the next hour.
+A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/pydexcom) using Google's [TimesFM](https://github.com/google-research/timesfm). Readings from the previous 24 hours are captured from the Dexcom Share API service and fed into the model to create a forecast of blood glucose values for the next hour.
 
 > All modelling and forecasting is performed locally on your device. The only external connections made are with:
 > - Dexcom Share API: fetching CGM readings following the `pydexcom` approach.
 > - HuggingFace: one-time download of the forecasting model weights on the first run.
 
 ## Quick Start
-1. Ensure that you also the `pydexcom` package and [enabled the Share service](https://provider.dexcom.com/education-research/cgm-education-use/videos/setting-dexcom-share-and-follow) within your [Dexcom G7 / G6 / G5 / G4](https://www.dexcom.com/apps).
+1. Ensure that you have also installed the `pydexcom` package and [enabled the Share service](https://provider.dexcom.com/education-research/cgm-education-use/videos/setting-dexcom-share-and-follow) within your [Dexcom G7 / G6 / G5 / G4](https://www.dexcom.com/apps).
 
 `pip install pydexcom forecose`
 
@@ -59,15 +59,15 @@ A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/
 ```
 
 ### What do these predictions mean?
-- `predicted-glucose`: The most likely trajectory your blood sugar will take (centred baseline of the confidence bands).
+- `predicted-glucose`: The average trajectory of your blood sugar forecast (smoothed, centred baseline of the confidence bands).
 - `q10` to `q90`: The range of confidence bands provide a realistic upper and lower estimate boundaries, showing the full probability distribution of predicted glucose values.
 
 ## Event Modelling
-To account for the key exogenous events (e.g., insulin administration or carbohydrate (carbs) intake) that act on blood glucose values without distorting the underlying TimesFM probability distribution, you can apply a deterministic overlay to your baseline forecast.
+To account for key events (e.g., insulin administration or carbohydrate (carbs) intake) that act on blood glucose values without distorting the underlying TimesFM probability distribution, you can apply a deterministic overlay to your baseline forecast.
 
 Drawing on mathematical frameworks utilised in closed-loop Artifical Pancreas systems and the Hovorka/Bergman meal submodels, event impacts are computed as a second-order linear delay process. Here, event unit rates (e.g., the absorption of insulin or carbs) are translated into a physiological curve that begins slowly, reaches a peak, and then gradually decays over time.
 
-By default, `forecose` updates the forecast predictions using the standard clinical baselines (a 55-minute peak for insulin, and a 40-minute peak for carbs):
+By default, `forecose` updates the forecast predictions using standard clinical baselines (a 55-minute peak for insulin, and a 40-minute peak for carbs):
 
 ```python
 >>> carb_predictions = predictions.add_event(type="carbs", units=30, minutes_ago=0)
@@ -103,7 +103,7 @@ By default, `forecose` updates the forecast predictions using the standard clini
 11 2026-06-30 12:51:43.327000+01:00                5.6  5.6  2.4  4.9  7.0  7.8
 ```
 
-By default, sensitivity to insulin (ISF) and carbohydrates (CSF) is set at 40 mg/dL per 1U and 4 mg/dL per gram, respectively. These values are placeholders meant to represent reasonable values and should be adjusted through the `add_event` method using the `tau` and `sensitivity` parameters. In future, I hope to develop a method for calculating estimate values from historic data.
+Sensitivity to insulin (ISF) and carbohydrates (CSF) is set at 40 mg/dL per 1U and 4 mg/dL per gram, respectively. These values are placeholders meant to represent reasonable values and should be adjusted through the `add_event` method using the `tau` and `sensitivity` parameters. In future, I hope to develop a method for calculating estimate values from historic data.
 
 ```python
 >>> insensitive_insulin_predictions = predictions.add_event(type="insulin", units=5, minutes_ago=0, sensitivity=20.0)
