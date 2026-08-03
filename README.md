@@ -11,7 +11,7 @@ A time-series forecasting extension for [pydexcom](https://github.com/gagebenne/
 > - HuggingFace: one-time download of the forecasting model weights on the first run.
 
 ## Quick Start
-1. Ensure that you have also installed the `pydexcom` package and [enabled the Share service](https://provider.dexcom.com/education-research/cgm-education-use/videos/setting-dexcom-share-and-follow) within your [Dexcom G7 / G6 / G5 / G4](https://www.dexcom.com/apps).
+1. Ensure that you have also installed the `pydexcom` package and [enabled the Share service](https://provider.dexcom.com/education-research/cgm-education-use/videos/setting-dexcom-share-and-follow) within your [Dexcom G7 / G6 / G5 / G4](https://www.dexcom.com/apps) mobile app.
 
 `pip install pydexcom forecose`
 
