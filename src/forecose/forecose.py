@@ -21,7 +21,7 @@ class DexcomForecast:
             horizon: int = HORIZON
     ) -> None:
         """
-        Compiles the TimesFM model.
+        Initialise forecast parameters.
         """
         self.context_len = context_len
         self.horizon = horizon
@@ -30,20 +30,29 @@ class DexcomForecast:
         self._last_timestamp = None
         self._sampling_interval = None
 
-        # initalise and compile the TimesFM model
-        self.model = timesfm.TimesFM_2p5_200M_torch.from_pretrained(
-            "google/timesfm-2.5-200m-pytorch"
-        )
-        self.model.compile(
-            timesfm.ForecastConfig(
-                max_context=self.context_len,
-                max_horizon=self.horizon,
-                normalize_inputs=True,
-                use_continuous_quantile_head=True,
-                infer_is_positive=True,
-                fix_quantile_crossing=True,
+        self._model = None
+
+    @property
+    def model(self) -> timesfm.TimesFM_2p5_200M_torch:
+        """Compiles the TimesFM model."""
+        if self._model is None:
+            # initalise and compile the TimesFM model
+            self._model = timesfm.TimesFM_2p5_200M_torch.from_pretrained(
+                "google/timesfm-2.5-200m-pytorch"
             )
-        )
+
+            self._model.compile(
+                timesfm.ForecastConfig(
+                    max_context=self.context_len,
+                    max_horizon=self.horizon,
+                    normalize_inputs=True,
+                    use_continuous_quantile_head=True,
+                    infer_is_positive=True,
+                    fix_quantile_crossing=True,
+                )
+            )
+
+        return self._model
 
     def _fetch_readings(self, dexcom: Dexcom) -> None:
         """Fetch the most recent readings from the active pydexcom session."""

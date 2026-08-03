@@ -102,3 +102,25 @@ def test_kinetics(mock_dexcom, mock_timesfm_model):
     assert error_df["predicted_glucose"].min() >= CLIP_LOW
 
     assert df["predicted_glucose"].equals(forecaster.get_forecast(mock_dexcom)["predicted_glucose"])
+
+@patch("forecose.forecose.timesfm.TimesFM_2p5_200M_torch.from_pretrained")
+def test_model_lazy_loading(mock_from_pretrained):
+    """Verfies the TimesFM model is only loaded on first access, not instatiation of the `DexcomForecast` object."""
+    forecaster = DexcomForecast()
+
+    # check that model was not called
+    mock_from_pretrained.assert_not_called()
+
+    # trigger model
+    mock_model_instance = mock_from_pretrained.return_value
+    model = forecaster.model
+
+    mock_from_pretrained.assert_called_once()
+    mock_model_instance.compile.assert_called_once()
+
+    # verify that multiple accessions does not recompile the model
+    _ = forecaster.model
+
+    assert mock_from_pretrained.call_count == 1
+
+    assert mock_model_instance.compile.call_count == 1
