@@ -28,7 +28,7 @@ class GlucoseForecast(pd.DataFrame):
 
         return forecast
     
-    def add_event(self, type: _TYPES, units: float, minutes_ago: int = 0, tau: float | None = None, sensitivity: float | None = None):
+    def add_event(self, type: _TYPES, units: float, minutes_ago: int = 0, tau: float | None = None, sensitivity: float | None = None) -> GlucoseForecast:
         """Applies an overly to account for insulin (downward) or carb (upward) events."""
         forecast = self.copy()
 

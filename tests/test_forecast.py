@@ -124,3 +124,29 @@ def test_model_lazy_loading(mock_from_pretrained):
     assert mock_from_pretrained.call_count == 1
 
     assert mock_model_instance.compile.call_count == 1
+
+def test_custom_data(mock_timesfm_model):
+    """Verifies that the forecast can run without Dexcom connection when custom data is provided."""
+    times = pd.date_range(end=pd.Timestamp.now(tz="UTC"), periods=288, freq="5min")
+    custom_df = pd.DataFrame({"Time": times, "Glucose": 105.0})
+
+    forecaster = DexcomForecast(cgm_history=custom_df)
+
+    # do not pass a dexcom object
+    df = forecaster.get_forecast()
+
+    assert isinstance(df, GlucoseForecast)
+
+    assert len(df) == 12
+
+    assert np.all(forecaster._cgm_history == 105.0)
+
+def test_custom_data_invalid_columns(mock_timesfm_model):
+    """Verifies invalid data columns blocks forecast execution."""
+    invalid_df = pd.DataFrame({"timestamp": [1, 2], "value": [100, 105]})
+
+    forecaster = DexcomForecast(cgm_history=invalid_df)
+
+    # raise KeyError
+    with pytest.raises(KeyError, match="Input data must only contain"):
+        forecaster.get_forecast()

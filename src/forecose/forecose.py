@@ -8,7 +8,7 @@ import timesfm
 
 from pydexcom import Dexcom
 
-from .const import CLIP_HIGH, CLIP_LOW, FORECAST_QUANTILES, HORIZON, MAX_MAX_COUNT, MAX_MINUTES
+from .const import CLIP_HIGH, CLIP_LOW, FORECAST_QUANTILES, HORIZON, MAX_MAX_COUNT, MAX_MINUTES, MMOL_L_CONVERSION_FACTOR
 
 from .glucose_forecast import GlucoseForecast
 
@@ -18,13 +18,16 @@ class DexcomForecast:
     def __init__(
             self,
             context_len: int = MAX_MAX_COUNT,
-            horizon: int = HORIZON
+            horizon: int = HORIZON,
+            cgm_history: pd.DataFrame | None = None
     ) -> None:
         """
         Initialise forecast parameters.
         """
         self.context_len = context_len
         self.horizon = horizon
+
+        self.custom_data = cgm_history
 
         self._cgm_history = None
         self._last_timestamp = None
@@ -54,22 +57,34 @@ class DexcomForecast:
 
         return self._model
 
-    def _fetch_readings(self, dexcom: Dexcom) -> None:
+    def _fetch_readings(self, dexcom: Dexcom | None = None) -> None:
         """Fetch the most recent readings from the active pydexcom session."""
-        if not isinstance(dexcom, Dexcom):
-            raise TypeError("Expected an object of type pydexcom.Dexcom.")
-        
-        # extract data
-        readings = dexcom.get_glucose_readings(
-            minutes=MAX_MINUTES, max_count=self.context_len
-        )
-        if not readings:
-            raise RuntimeError("No readings returned from Dexcom Share API.")
-        
-        # process data structures
-        df = pd.DataFrame(
-            [{"Time": r.datetime, "Glucose": r.value} for r in reversed(readings)]
-        )
+        # validate custom data structure
+        if self.custom_data is not None and isinstance(self.custom_data, pd.DataFrame):
+            df = self.custom_data.copy()
+            if not {"Time", "Glucose"}.issubset(df.columns):
+                raise KeyError("Input data must only contain 'Time' and 'Glucose' columns.")
+
+            if df["Glucose"].min() < CLIP_LOW:
+                # input data is using mmol/l units
+                df["Glucose"] = df["Glucose"] / MMOL_L_CONVERSION_FACTOR
+
+        else:
+            if not isinstance(dexcom, Dexcom):
+                raise TypeError("Expected an object of type pydexcom.Dexcom.")
+
+            # extract data
+            readings = dexcom.get_glucose_readings(
+                minutes=MAX_MINUTES, max_count=self.context_len
+            )
+            if not readings:
+                raise RuntimeError("No readings returned from Dexcom Share API.")
+
+            # process data structures
+            df = pd.DataFrame(
+                [{"Time": r.datetime, "Glucose": r.value} for r in reversed(readings)]
+            )
+
         df["Time"] = pd.to_datetime(df["Time"], utc=True).dt.tz_convert("Europe/London")
         df = df.sort_values("Time").reset_index(drop=True)
 
@@ -77,7 +92,7 @@ class DexcomForecast:
         self._last_timestamp = df["Time"].iloc[-1]
         self._sampling_interval = pd.Timedelta(df["Time"].diff().median())
 
-    def get_forecast(self, dexcom: Dexcom) -> GlucoseForecast:
+    def get_forecast(self, dexcom: Dexcom | None = None) -> GlucoseForecast:
         """Returns point and quantile forecasts of time series data."""
         self._fetch_readings(dexcom)
 
