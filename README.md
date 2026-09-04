@@ -130,6 +130,19 @@ Forecast historical CGM data without the need to connect to the Dexcom Share API
 ```python
 >>> import pandas as pd
 >>> custom_data = pd.read_csv("historical_cgm_data.csv")
+>>> print(custom_data)
+                     Time  Glucose
+0     2026-08-27T00:01:57      6.7
+1     2026-08-27T00:06:57      6.4
+2     2026-08-27T00:11:57      6.2
+3     2026-08-27T00:16:57      5.9
+4     2026-08-27T00:21:58      5.8
+...                   ...      ...
+1714  2026-09-01T23:37:11      8.5
+1715  2026-09-01T23:42:11      8.3
+1716  2026-09-01T23:47:11      7.8
+1717  2026-09-01T23:52:11      7.5
+1718  2026-09-01T23:57:11      7.1
 ```
 
 Pass the input data when initialising the `DexcomForecast` class via `cgm_history` to bypass the requirement to connect to the Dexcom Share API service.
