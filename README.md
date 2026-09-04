@@ -122,3 +122,18 @@ Sensitivity to insulin (ISF) and carbohydrates (CSF) is set at 40 mg/dL per 1U a
 10 2026-06-30 12:46:43.327500+01:00                7.5  7.5  4.5  6.9  8.9  9.7
 11 2026-06-30 12:51:43.327000+01:00                7.3  7.2  4.1  6.6  8.7  9.5
 ```
+
+## Custom Data Forecasting
+
+Forecast historical CGM data without the need to connect to the Dexcom Share API service. The input data must contain only `Time` and `Glucose` columns to successfully generate a forecast prediction.
+
+```python
+>>> import pandas as pd
+>>> custom_data = pd.read_csv("historical_cgm_data.csv")
+```
+
+Pass the input data when initialising the `DexcomForecast` class via `cgm_history` to bypass the requirement to connect to the Dexcom Share API service.
+
+```python
+>>> custom_predictions = DexcomForecast(cgm_history=custom_data).get_forecast()
+```
