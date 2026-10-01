@@ -19,11 +19,15 @@ def mock_timesfm_model():
 
         # quantiles
         mock_quantiles = np.zeros((1, 12, 10))
-        mock_quantiles[0, :, 0] = 80.0
-        mock_quantiles[0, :, 1] = 90.0
-        mock_quantiles[0, :, 4] = 100.0
+        mock_quantiles[0, :, 1] = 80.0
+        mock_quantiles[0, :, 2] = 85.0
+        mock_quantiles[0, :, 3] = 90.0
+        mock_quantiles[0, :, 4] = 95.0
+        mock_quantiles[0, :, 5] = 100.0
+        mock_quantiles[0, :, 6] = 105.0
         mock_quantiles[0, :, 7] = 110.0
-        mock_quantiles[0, :, 8] = 120.0
+        mock_quantiles[0, :, 8] = 115.0
+        mock_quantiles[0, :, 9] = 120.0
 
         instance.forecast.return_value = (mock_point, mock_quantiles)
         yield instance
@@ -63,7 +67,7 @@ def test_forecast_structure(mock_dexcom, mock_timesfm_model):
 
     assert len(df) == 12
 
-    assert list(df.columns) == ["timestamp", "predicted_glucose", "q10", "q25", "q50", "q75", "q90"]
+    assert list(df.columns) == ["timestamp", "predicted_glucose", "q10", "q20", "q30", "q40", "q50", "q60", "q70", "q80", "q90"]
 
 def test_forecaster_empty_history(mock_dexcom_empty, mock_timesfm_model):
     """Verifies the model blocks execution if no data is passed from the Dexcom Share API."""
