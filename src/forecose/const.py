@@ -28,11 +28,15 @@ CLIP_HIGH = 400
 """Highest glucose value reading in mg/dL."""
 
 FORECAST_QUANTILES: dict[str, int] = {
-    "q10": 0,
-    "q25": 1,
-    "q50": 4,
-    "q75": 7,
-    "q90": 8
+    "q10": 1,
+    "q20": 2,
+    "q30": 3,
+    "q40": 4,
+    "q50": 5,
+    "q60": 6,
+    "q70": 7,
+    "q80": 8,
+    "q90": 9,
 }
 """Forecast quantiles."""
 
